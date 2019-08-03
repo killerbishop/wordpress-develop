@@ -111,9 +111,9 @@ class WP_Styles extends WP_Dependencies {
 		 *
 		 * @since 2.6.0
 		 *
-		 * @param WP_Styles $this WP_Styles instance (passed by reference).
+		 * @param WP_Styles $this WP_Styles instance.
 		 */
-		do_action_ref_array( 'wp_default_styles', array( &$this ) );
+		do_action( 'wp_default_styles', $this );
 	}
 
 	/**

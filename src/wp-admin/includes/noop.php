@@ -55,7 +55,7 @@ function did_action() {}
 /**
  * @ignore
  */
-function do_action_ref_array() {}
+function do_action() {}
 
 /**
  * @ignore

@@ -41,7 +41,7 @@ require( ABSPATH . WPINC . '/functions.wp-styles.php' );
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_register_tinymce_scripts( &$scripts, $force_uncompressed = false ) {
+function wp_register_tinymce_scripts( WP_Scripts $scripts, $force_uncompressed = false ) {
 	global $tinymce_version, $concatenate_scripts, $compress_scripts;
 	$suffix     = wp_scripts_get_suffix();
 	$dev_suffix = wp_scripts_get_suffix( 'dev' );
@@ -73,7 +73,7 @@ function wp_register_tinymce_scripts( &$scripts, $force_uncompressed = false ) {
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_default_packages_vendor( &$scripts ) {
+function wp_default_packages_vendor( WP_Scripts $scripts ) {
 	global $wp_locale;
 
 	$suffix = wp_scripts_get_suffix();
@@ -170,7 +170,7 @@ function wp_default_packages_vendor( &$scripts ) {
  * @param array      $tests   Features to detect.
  * @return string Conditional polyfill inline script.
  */
-function wp_get_script_polyfill( &$scripts, $tests ) {
+function wp_get_script_polyfill( WP_Scripts $scripts, $tests ) {
 	$polyfill = '';
 	foreach ( $tests as $test => $handle ) {
 		if ( ! array_key_exists( $handle, $scripts->registered ) ) {
@@ -220,7 +220,7 @@ function wp_get_script_polyfill( &$scripts, $tests ) {
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_default_packages_scripts( &$scripts ) {
+function wp_default_packages_scripts( WP_Scripts $scripts ) {
 	$suffix = wp_scripts_get_suffix();
 
 	$packages_versions = array(
@@ -527,7 +527,7 @@ function wp_default_packages_scripts( &$scripts ) {
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_default_packages_inline_scripts( &$scripts ) {
+function wp_default_packages_inline_scripts( WP_Scripts $scripts ) {
 	global $wp_locale;
 
 	if ( isset( $scripts->registered['wp-api-fetch'] ) ) {
@@ -783,7 +783,7 @@ function wp_tinymce_inline_scripts() {
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_default_packages( &$scripts ) {
+function wp_default_packages( WP_Scripts $scripts ) {
 	wp_default_packages_vendor( $scripts );
 	wp_register_tinymce_scripts( $scripts );
 	wp_default_packages_scripts( $scripts );
@@ -841,7 +841,7 @@ function wp_scripts_get_suffix( $type = '' ) {
  *
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function wp_default_scripts( &$scripts ) {
+function wp_default_scripts( WP_Scripts $scripts ) {
 	$suffix     = wp_scripts_get_suffix();
 	$dev_suffix = wp_scripts_get_suffix( 'dev' );
 	$guessurl   = site_url();
@@ -1877,7 +1877,7 @@ function wp_default_scripts( &$scripts ) {
  *
  * @param WP_Styles $styles
  */
-function wp_default_styles( &$styles ) {
+function wp_default_styles( WP_Styles $styles ) {
 	include( ABSPATH . WPINC . '/version.php' ); // include an unmodified $wp_version
 
 	if ( ! defined( 'SCRIPT_DEBUG' ) ) {
