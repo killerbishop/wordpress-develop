@@ -1730,6 +1730,107 @@ class WP_Site_Health {
 	}
 
 	/**
+	 * Scan the WordPress codebase for modified and/or missing files.
+	 *
+	 * Files that have been modified or that have gone missing may indicate that the site
+	 * has been compromised, installation failure, or that the code has been customized.
+	 * Users that know the codebase should be unaltered will be offered to reinstall or
+	 * upgrade WordPress in response.
+	 *
+	 * @since 5.3.0
+	 *
+	 * @return array The test results. Missing/modified files will be reported.
+	 */
+	public static function get_test_codebase_integrity() {
+		$result = array(
+			'label'       => __( 'Code integrity was successfully verified against published checksums' ),
+			'status'      => 'good',
+			'badge'       => array(
+				'label' => __( 'Security' ),
+				'color' => 'blue',
+			),
+			'description' => __( 'Verify that the WordPress codebase has not been modified or is missing files. Unknown modifications to the codebase could indicate that your site has been compromised and may require reinstallation.' ),
+			'actions'     => '',
+			'test'        => 'code_integrity',
+                );
+
+		$wp_version = get_bloginfo( 'version' );
+
+		// Retrieve a list of checksums from the remote server for verification
+
+		$checksums = get_core_checksums( $wp_version, $wp_local_package ?: 'en_US' );
+		if ( ! $checksums && false !== strpos( $wp_version, '-' ) ) {
+			$checksums = get_core_checksums( (float) $wp_version - 0.1, $wp_local_package ?: 'en_US' );
+                }
+
+		if ( empty( $checksums ) ) {
+			$result['status'] = 'critical';
+			$result['description'] .= __( 'Unable to download checksums for version %s', $wp_version );
+                        $result['actions'] = sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'update-core.php?force-check=1' ) ),
+				__( 'Check for updates manually' )
+			);
+			return $result;
+		}
+
+		$changed_files = array();
+		foreach ( $checksums as $file => $checksum ) {
+
+			if ( ! file_exists( ABSPATH . $file ) ) {
+				$changed_files[] = array(
+					'file'   => $file,
+					'status' => 'missing',
+				);
+				continue;
+			}
+
+			$existing_checksum = md5_file( ABSPATH . $file );
+			if ( $existing_checksum !== $checksum ) {
+				$changed_files[] = array(
+					'file'   => $file,
+					'status' => 'modified',
+				);
+			}
+
+		}
+
+		if ( ! empty($changed_files) ) {
+
+			$result['status'] = 'recommended';
+			$result['label']  = __( 'WordPress installation has been altered' );
+
+			$output = '<ul>';
+			foreach( $changed_files as $file ) {
+
+				if ( 'missing' === $file['status'] ) {
+					$info = __( 'missing' );
+				} else {
+					$info = __( 'modified' );
+				}
+
+				$output .= sprintf(
+					'<li>%s (%s)</li>',
+					$file['file'],
+					$info
+				);
+			}
+			$output .= '</ul>';
+
+			$result['description'] .= $output;
+
+			$result['actions'] = sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'update-core.php?force_check=1' ) ),
+				__( 'Restore the current version of WordPress' )
+			);
+
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Return a set of tests that belong to the site status page.
 	 *
 	 * Each site status test is defined here, they may be `direct` tests, that run on page load, or `async` tests
@@ -1790,6 +1891,10 @@ class WP_Site_Health {
 				'debug_enabled'     => array(
 					'label' => __( 'Debugging enabled' ),
 					'test'  => 'is_in_debug_mode',
+				),
+				'codebase_integrity'  => array(
+					'label' => __( 'Codebase Integrity Check' ),
+					'test'  => 'codebase_integrity'
 				),
 			),
 			'async'  => array(
