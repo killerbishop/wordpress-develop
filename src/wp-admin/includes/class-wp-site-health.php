@@ -1770,13 +1770,9 @@ class WP_Site_Health {
 		}
 
 		if ( empty( $checksums ) ) {
-			$result['status']       = 'critical';
-                        $result['actions']      = 'Try running this test again later.';
-			// translators: %s: The current version of WordPress installed on this site.
-			$result['description'] .= sprintf(
-				__( 'Unable to download checksums for version: %s' ),
-				$wp_version
-			);
+			$result['status']      = 'critical';
+                        $result['actions']     = 'Unable to scan core files for changes';
+			$result['description'] = __( 'The checksum file list could not be downloaded. There maybe a connection issue or a list is not available for this version. Please try to run this test again at a later time.' );
 			return $result;
 		}
 
