@@ -5064,7 +5064,7 @@ function wp_ajax_health_check_get_sizes() {
  * @since 5.3.0
  */
 function wp_ajax_health_check_code_integrity() {
-        check_ajax_referer( 'health-check-code-integrity' );
+        check_ajax_referer( 'health-check-site-status' );
 
         if ( ! current_user_can( 'view_site_health_checks' ) ) {
                 wp_send_json_error();
