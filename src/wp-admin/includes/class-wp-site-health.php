@@ -1743,13 +1743,13 @@ class WP_Site_Health {
 	 */
 	public function get_test_code_integrity() {
 		$result = array(
-			'label'       => __( 'No changes to the core files has been detected' ),
+			'label'       => __( 'No changes to the core files are detected' ),
 			'status'      => 'good',
 			'badge'       => array(
 				'label' => __( 'Security' ),
 				'color' => 'blue',
 			),
-			'description' => __( 'A scan for changes to the core WordPress files has been performed. No changes have been detected.' ),
+			'description' => __( 'A scan for changes to the core WordPress files was performed. No changes are detected.' ),
 			'actions'     => '',
 			'test'        => 'code_integrity',
                 );
@@ -1783,7 +1783,7 @@ class WP_Site_Health {
 		$changed_files = false;
 		foreach ( $checksums as $file => $checksum ) {
 
-			if ( 0 === strncmp($file, 'wp-content', 10) ) {
+			if ( 0 === strncmp( $file, 'wp-content', 10 ) ) {
 				continue;
 			}
 
@@ -1804,7 +1804,7 @@ class WP_Site_Health {
 
 			$result['status'] = 'recommended';
 			$result['label']  = __( 'Some core files may have been modified' );
-			$result['description'] = __( 'Some WordPress core files may have been changed. One reason this check may fail is that you need to install a version that makes use of the right translation files. Another reason might be that your service provider has customized your WordPress installation. If you have the ability to do so, a simple fix is to reinstall WordPress. Reinstall of the core system should not affect any plugins, themes, or content that you have posted.' );
+			$result['description'] = __( 'Some WordPress core files may have been changed. One reason this check can fail is that you need to install a version that makes use of the right translation files. If you have the ability to do so, a simple fix is to reinstall WordPress. Reinstall of the core system should not affect any plugins, themes, or content that you have posted.' );
 			$result['actions'] = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( admin_url( 'update-core.php?force_check=1' ) ),
