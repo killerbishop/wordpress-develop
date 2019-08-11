@@ -1734,22 +1734,22 @@ class WP_Site_Health {
 	 *
 	 * Files that have been modified or that have gone missing may indicate that the site
 	 * has been compromised, installation failure, or that the code has been customized.
-	 * Users that know the codebase should be unaltered will be offered to reinstall or
+	 * Users that know the code base should be unaltered will be offered to reinstall or
 	 * upgrade WordPress in response.
 	 *
 	 * @since 5.3.0
 	 *
-	 * @return array The test results. Missing/modified files will be reported.
+	 * @return array The test results.
 	 */
-	public static function get_test_codebase_integrity() {
+	public static function get_test_code_integrity() {
 		$result = array(
-			'label'       => __( 'Code integrity was successfully verified against published checksums' ),
+			'label'       => __( 'No changes to the core code has been detected' ),
 			'status'      => 'good',
 			'badge'       => array(
 				'label' => __( 'Security' ),
 				'color' => 'blue',
 			),
-			'description' => __( 'Verify that the WordPress codebase has not been modified or is missing files. Unknown modifications to the codebase could indicate that your site has been compromised and may require reinstallation.' ),
+			'description' => __( 'A scan for changes to the core source code has been performed and no changes were detected.' ),
 			'actions'     => '',
 			'test'        => 'code_integrity',
                 );
@@ -1758,71 +1758,47 @@ class WP_Site_Health {
 
 		// Retrieve a list of checksums from the remote server for verification
 
-		$checksums = get_core_checksums( $wp_version, $wp_local_package ?: 'en_US' );
+		$checksums = get_core_checksums( $wp_version, get_locale() );
 		if ( ! $checksums && false !== strpos( $wp_version, '-' ) ) {
-			$checksums = get_core_checksums( (float) $wp_version - 0.1, $wp_local_package ?: 'en_US' );
+			$checksums = get_core_checksums( (float) $wp_version - 0.1, get_locale() );
                 }
 
 		if ( empty( $checksums ) ) {
-			$result['status'] = 'critical';
-			$result['description'] .= __( 'Unable to download checksums for version %s', $wp_version );
-                        $result['actions'] = sprintf(
-				'<a href="%s">%s</a>',
-				esc_url( admin_url( 'update-core.php?force-check=1' ) ),
-				__( 'Check for updates manually' )
+			$result['status']       = 'critical';
+                        $result['actions']      = 'Try running this test again later.';
+			// translators: %s: The current version of WordPress installed on this site.
+			$result['description'] .= sprintf(
+				__( 'Unable to download checksums for version: %s' ),
+				$wp_version
 			);
 			return $result;
 		}
 
-		$changed_files = array();
+		$changed_files = false;
 		foreach ( $checksums as $file => $checksum ) {
 
 			if ( ! file_exists( ABSPATH . $file ) ) {
-				$changed_files[] = array(
-					'file'   => $file,
-					'status' => 'missing',
-				);
-				continue;
+				$changed_files = true;
+				break;
 			}
 
 			$existing_checksum = md5_file( ABSPATH . $file );
 			if ( $existing_checksum !== $checksum ) {
-				$changed_files[] = array(
-					'file'   => $file,
-					'status' => 'modified',
-				);
+				$changed_files = true;
+				break;
 			}
 
 		}
 
-		if ( ! empty($changed_files) ) {
+		if ( true === $changed_files ) {
 
 			$result['status'] = 'recommended';
-			$result['label']  = __( 'WordPress installation has been altered' );
-
-			$output = '<ul>';
-			foreach( $changed_files as $file ) {
-
-				if ( 'missing' === $file['status'] ) {
-					$info = __( 'missing' );
-				} else {
-					$info = __( 'modified' );
-				}
-
-				$output .= sprintf(
-					'<li>%s (%s)</li>',
-					$file['file'],
-					$info
-				);
-			}
-			$output .= '</ul>';
-
-			$result['description'] .= $output;
-
+			$result['label']  = __( 'Some core WordPress files may have been modified' );
+			$result['description'] = __( 'Some core WordPress files have been changed from the official distribution. These changes may have been performed by a service provider or as customizations for your WordPress installation.' );
 			$result['actions'] = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( admin_url( 'update-core.php?force_check=1' ) ),
-				__( 'Restore the current version of WordPress' )
+				__( 'Restore files by reinstalling manually' )
 			);
 
 		}
@@ -1892,10 +1868,6 @@ class WP_Site_Health {
 					'label' => __( 'Debugging enabled' ),
 					'test'  => 'is_in_debug_mode',
 				),
-				'codebase_integrity'  => array(
-					'label' => __( 'Codebase Integrity Check' ),
-					'test'  => 'codebase_integrity'
-				),
 			),
 			'async'  => array(
 				'dotorg_communication' => array(
@@ -1909,6 +1881,10 @@ class WP_Site_Health {
 				'loopback_requests'    => array(
 					'label' => __( 'Loopback request' ),
 					'test'  => 'loopback_requests',
+				),
+				'code_integrity'  => array(
+					'label' => __( 'WordPress Core Integrity Check' ),
+					'test'  => 'code_integrity'
 				),
 			),
 		);
