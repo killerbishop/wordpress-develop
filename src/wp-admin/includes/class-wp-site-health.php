@@ -1741,27 +1741,33 @@ class WP_Site_Health {
 	 *
 	 * @return array The test results.
 	 */
-	public static function get_test_code_integrity() {
+	public function get_test_code_integrity() {
 		$result = array(
-			'label'       => __( 'No changes to the core code has been detected' ),
+			'label'       => __( 'No changes to the core files has been detected' ),
 			'status'      => 'good',
 			'badge'       => array(
 				'label' => __( 'Security' ),
 				'color' => 'blue',
 			),
-			'description' => __( 'A scan for changes to the core source code has been performed and no changes were detected.' ),
+			'description' => __( 'A scan for changes to the core WordPress files has been performed. No changes have been detected.' ),
 			'actions'     => '',
 			'test'        => 'code_integrity',
                 );
 
 		$wp_version = get_bloginfo( 'version' );
+		$wp_locale  = get_locale();
 
 		// Retrieve a list of checksums from the remote server for verification
 
-		$checksums = get_core_checksums( $wp_version, get_locale() );
-		if ( ! $checksums && false !== strpos( $wp_version, '-' ) ) {
-			$checksums = get_core_checksums( (float) $wp_version - 0.1, get_locale() );
-                }
+		$checksums = get_transient( 'health-check-code-integrity-checksums' );
+		if ( false === $checksums ) {
+			$checksums = get_core_checksums( $wp_version, $wp_locale );
+			if ( false === $checksums && false !== strpos( $wp_version, '-' ) ) {
+				$checksums = get_core_checksums( (float) $wp_version - 0.1, $wp_locale );
+                	}
+
+			set_transient( 'health-check-code-integrity-checksums', $checksums, HOURS_IN_SECONDS );
+		}
 
 		if ( empty( $checksums ) ) {
 			$result['status']       = 'critical';
@@ -1776,6 +1782,10 @@ class WP_Site_Health {
 
 		$changed_files = false;
 		foreach ( $checksums as $file => $checksum ) {
+
+			if ( 0 === strncmp($file, 'wp-content', 10) ) {
+				continue;
+			}
 
 			if ( ! file_exists( ABSPATH . $file ) ) {
 				$changed_files = true;
@@ -1793,12 +1803,12 @@ class WP_Site_Health {
 		if ( true === $changed_files ) {
 
 			$result['status'] = 'recommended';
-			$result['label']  = __( 'Some core WordPress files may have been modified' );
-			$result['description'] = __( 'Some core WordPress files have been changed from the official distribution. These changes may have been performed by a service provider or as customizations for your WordPress installation.' );
+			$result['label']  = __( 'Some core files may have been modified' );
+			$result['description'] = __( 'Some WordPress core files may have been changed. One reason this check may fail is that you need to install a version that makes use of the right translation files. Another reason might be that your service provider has customized your WordPress installation. If you have the ability to do so, a simple fix is to reinstall WordPress. Reinstall of the core system should not affect any plugins, themes, or content that you have posted.' );
 			$result['actions'] = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( admin_url( 'update-core.php?force_check=1' ) ),
-				__( 'Restore files by reinstalling manually' )
+				__( 'Reinstall WordPress manually' )
 			);
 
 		}
@@ -1883,7 +1893,7 @@ class WP_Site_Health {
 					'test'  => 'loopback_requests',
 				),
 				'code_integrity'  => array(
-					'label' => __( 'WordPress Core Integrity Check' ),
+					'label' => __( 'WordPress Core Files Integrity Check' ),
 					'test'  => 'code_integrity'
 				),
 			),
