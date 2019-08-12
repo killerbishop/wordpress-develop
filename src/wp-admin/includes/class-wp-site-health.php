@@ -1771,7 +1771,7 @@ class WP_Site_Health {
 
 		if ( empty( $checksums ) ) {
 			$result['status']      = 'critical';
-                        $result['label']       = __( 'Unable to scan core files for changes' );
+			$result['label']       = __( 'Unable to scan core files for changes' );
 			$result['description'] = __( 'The checksum file list could not be downloaded. There maybe a connection issue or a list is not available for this version. Please try to run this test again at a later time.' );
 			return $result;
 		}
