@@ -1730,7 +1730,7 @@ class WP_Site_Health {
 	}
 
 	/**
-	 * Scan the WordPress codebase for modified and/or missing files.
+	 * Scan the WordPress core files for modified and/or missing files.
 	 *
 	 * Files that have been modified or that have gone missing may indicate that the site
 	 * has been compromised, installation failure, or that the code has been customized.
@@ -1741,7 +1741,7 @@ class WP_Site_Health {
 	 *
 	 * @return array The test results.
 	 */
-	public function get_test_code_integrity() {
+	public function get_test_core_integrity() {
 		$result = array(
 			'label'       => __( 'No changes to the core files are detected' ),
 			'status'      => 'good',
@@ -1751,7 +1751,7 @@ class WP_Site_Health {
 			),
 			'description' => __( 'A scan for changes to the core WordPress files was performed. No changes are detected.' ),
 			'actions'     => '',
-			'test'        => 'code_integrity',
+			'test'        => 'core_integrity',
                 );
 
 		$wp_version = get_bloginfo( 'version' );
@@ -1771,7 +1771,7 @@ class WP_Site_Health {
 
 		if ( empty( $checksums ) ) {
 			$result['status']      = 'critical';
-                        $result['label']       = 'Unable to scan core files for changes';
+                        $result['label']       = __( 'Unable to scan core files for changes' );
 			$result['description'] = __( 'The checksum file list could not be downloaded. There maybe a connection issue or a list is not available for this version. Please try to run this test again at a later time.' );
 			return $result;
 		}
@@ -1888,9 +1888,9 @@ class WP_Site_Health {
 					'label' => __( 'Loopback request' ),
 					'test'  => 'loopback_requests',
 				),
-				'code_integrity'  => array(
+				'core_integrity'  => array(
 					'label' => __( 'WordPress Core Files Integrity Check' ),
-					'test'  => 'code_integrity'
+					'test'  => 'core_integrity'
 				),
 			),
 		);
