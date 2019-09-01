@@ -2735,6 +2735,12 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 				$type = false;
 				$ext  = false;
 			}
+		} elseif ( 'text/html' === $real_mime ) {
+			// Subrip text files can optionally contain HTML tags
+			if ( 'srt' !== $ext ) {
+				$type = false;
+				$ext  = false;
+			}
 		} elseif ( 'text/rtf' === $real_mime ) {
 			// Special casing for RTF files.
 			if ( ! in_array(

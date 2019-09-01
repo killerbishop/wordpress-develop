@@ -1384,6 +1384,16 @@ class Tests_Functions extends WP_UnitTestCase {
 							'proper_filename' => false,
 						),
 					),
+					array(
+						DIR_TESTDATA . '/uploads/test.srt',
+						'test.srt',
+						array(
+							'ext'             => 'srt',
+							'type'            => 'text/plain',
+							'proper_filename' => false,
+						),
+					),
+
 				)
 			);
 		}
